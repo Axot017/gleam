@@ -183,6 +183,58 @@
   about the whole block saying it has the wrong function type.
   ([Giacomo Cavalieri](https://github.com/giacomocavalieri))
 
+- The compiler will now raise a warning when pattern matching on a literal value
+  like a list, a tuple, integers, strings etc.
+  ([Giacomo Cavalieri](https://github.com/giacomocavalieri))
+
+  ```
+  warning: Redundant list
+    ┌─ /src/warning/wrn.gleam:2:14
+    │
+  2 │         case [1, 2] {
+    │              ^^^^^^ You can remove this list wrapper
+
+  Instead of building a list and matching on it, you can match on its
+  contents directly.
+  A case expression can take multiple subjects separated by commas like this:
+
+      case one_subject, another_subject {
+        _, _ -> todo
+      }
+
+  See: https://tour.gleam.run/flow-control/multiple-subjects/
+  ```
+
+  ```
+  warning: Match on a literal value
+    ┌─ /src/warning/wrn.gleam:4:8
+    │
+  4 │   case 1 {
+    │        ^ There's no need to pattern match on this value
+
+  Matching on a literal value is redundant since you can already tell which
+  branch is going to match with this value.
+
+- The compiler will now continue module analysis when there are errors in top level constant definitions. This means that multiple constant errors can be displayed at once if there are not other errors. ([Ameen Radwan](https://github.com/Acepie))
+
+  ```
+  error: Unknown type
+    ┌─ /src/test_gleam.gleam:5:18
+    │
+  5 │ const my_string: MyInvalidType = "str"
+    │                  ^^^^^^^^^^^^^
+
+  The type `MyInvalidType` is not defined or imported in this module.
+
+  error: Unknown variable
+    ┌─ /src/test_gleam.gleam:7:35
+    │
+  7 │ const my_tuple: String = #(Ok(1), MyInvalidType, 3)
+    │                                   ^^^^^^^^^^^^^
+
+  The name `MyInvalidType` is not in scope here.
+  ```
+
 ### Formatter
 
 - Redundant alias names for imported modules are now removed.
@@ -356,3 +408,10 @@
 - Fixed a bug where having utf8 symbols in `gleam.toml`'s description value
   would result in an HTTP 500 error when running `gleam publish`.
   ([inoas](https://github.com/inoas))
+
+- Unicode `\u{}` syntax in bit_array string segments now produce valid Erlang
+  unicode characters ([Pi-Cla](https://github.com/Pi-Cla))
+
+- Fixed a bug where using a constant defined in another module that referenced
+  a private function could generate invalid code on the Erlang target.
+  ([Shayan Javani](https://github.com/massivefermion))
